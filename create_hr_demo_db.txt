@@ -1,0 +1,234 @@
+--------------------------------------------------------
+--  DDL for Table MST_REGIONS
+--------------------------------------------------------
+
+  CREATE TABLE  MST_REGIONS  
+   (	 NU_REGION_ID  NUMBER, 
+	 VC_REGION_NAME  VARCHAR2(25),
+	CONSTRAINT  REGION_N_ID_PK  PRIMARY KEY ( NU_REGION_ID ) ENABLE
+   ) ;
+--------------------------------------------------------
+--  DDL for Table DT_LOCATIONS
+--------------------------------------------------------
+
+  CREATE TABLE  DT_LOCATIONS  
+   (	 NU_LOCATION_ID  NUMBER(4,0), 
+	 VC_STREET_ADDRESS  VARCHAR2(40), 
+	 VC_POSTAL_CODE  VARCHAR2(12), 
+	 VC_CITY  VARCHAR2(30), 
+	 VC_STATE_PROVINCE  VARCHAR2(25), 
+	 CH_COUNTRY_ID  CHAR(2)
+   ) ;
+  --------------------------------------------------------
+--  DDL for Table MST_JOBS
+--------------------------------------------------------
+
+  CREATE TABLE  MST_JOBS  
+   (	 VC_JOB_ID  VARCHAR2(10), 
+	 VC_JOB_TITLE  VARCHAR2(35), 
+	 NU_MIN_SALARY  NUMBER(6,0), 
+	 NU_MAX_SALARY  NUMBER(6,0),
+	CONSTRAINT  JOB_V_ID_PK  PRIMARY KEY ( VC_JOB_ID ) ENABLE
+   ) ;
+
+--------------------------------------------------------
+--  DDL for Table DT_JOB_HISTORY
+--------------------------------------------------------
+
+  CREATE TABLE  DT_JOB_HISTORY  
+   (	 NU_EMPLOYEE_ID  NUMBER(6,0), 
+	 DT_START_DATE  DATE, 
+	 DT_END_DATE  DATE, 
+	 VC_JOB_ID  VARCHAR2(10), 
+	 NU_DEPARTMENT_ID  NUMBER(4,0)
+   ) ;
+---------------------------
+-- MST_country table
+--------------------- 
+CREATE TABLE  MST_COUNTRIES  
+   (	 CH_COUNTRY_ID  CHAR(2), 
+	 VC_COUNTRY_NAME  VARCHAR2(40), 
+	 NU_REGION_ID  NUMBER, 
+	 CONSTRAINT  COUNTRY_C_ID_PK  PRIMARY KEY ( CH_COUNTRY_ID ) ENABLE
+   );
+-----------------------------------
+--table MST_departments
+-----------------------------------
+CREATE TABLE  MST_DEPARTMENTS  
+   (	 NU_DEPARTMENT_ID  NUMBER(4,0), 
+	 VC_DEPARTMENT_NAME  VARCHAR2(30), 
+	 NU_MANAGER_ID  NUMBER(6,0), 
+	 NU_LOCATION_ID  NUMBER(4,0),
+	CONSTRAINT  DEPARTMENT_N_ID_PK  PRIMARY KEY ( NU_DEPARTMENT_ID ) ENABLE
+   );
+----------------------------
+--DT_EMPLOYEES TABLE
+-------------------------
+  CREATE TABLE  DT_EMPLOYEES  
+   (	 NU_EMPLOYEE_ID  NUMBER(6,0), 
+	 VC_FIRST_NAME  VARCHAR2(20), 
+	 VC_LAST_NAME  VARCHAR2(25), 
+	 VC_EMAIL  VARCHAR2(25 BYTE), 
+	 VC_PHONE_NUMBER  VARCHAR2(20), 
+	 DT_HIRE_DATE  DATE, 
+	 VC_JOB_ID  VARCHAR2(10), 
+	 NU_SALARY  NUMBER(8,2), 
+	 NU_COMMISSION_PCT  NUMBER(2,2), 
+	 NU_MANAGER_ID  NUMBER(6,0), 
+	 NU_DEPARTMENT_ID  NUMBER(4,0)
+   );
+
+--------------------------------------------------------
+--  Ref Constraints for Table MST_COUNTRIES
+--------------------------------------------------------
+
+  ALTER TABLE  MST_COUNTRIES  ADD CONSTRAINT  COUNTR_REG_FK  FOREIGN KEY ( NU_REGION_ID )
+	  REFERENCES  MST_REGIONS  ( NU_REGION_ID ) ENABLE;
+
+--------------------------------------------------------
+--  DDL for Index EMP_EMAIL_UK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX  EMP_EMAIL_UK  ON  DT_EMPLOYEES  ( VC_EMAIL ) ;
+--------------------------------------------------------
+--  DDL for Index EMP_MANAGER_IX
+--------------------------------------------------------
+
+  CREATE INDEX  EMP_MANAGER_IX  ON  DT_EMPLOYEES  ( NU_MANAGER_ID ); 
+  
+--------------------------------------------------------
+--  DDL for Index EMP_NAME_IX
+--------------------------------------------------------
+
+  CREATE INDEX  EMP_NAME_IX  ON  DT_EMPLOYEES  ( VC_LAST_NAME ,  VC_FIRST_NAME );
+--------------------------------------------------------
+--  DDL for Index EMP_EMP_ID_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX  EMP_EMP_ID_PK  ON  DT_EMPLOYEES  ( NU_EMPLOYEE_ID );
+--------------------------------------------------------
+--  DDL for Index EMP_DEPARTMENT_IX
+--------------------------------------------------------
+
+  CREATE INDEX  EMP_DEPARTMENT_IX  ON  DT_EMPLOYEES  ( NU_DEPARTMENT_ID );
+--------------------------------------------------------
+--  DDL for Index EMP_JOB_IX
+--------------------------------------------------------
+
+  CREATE INDEX  EMP_JOB_IX  ON  DT_EMPLOYEES  ( VC_JOB_ID );
+ 
+--------------------------------------------------------
+--  Constraints for Table DT_EMPLOYEES
+--------------------------------------------------------
+
+  ALTER TABLE  DT_EMPLOYEES  ADD CONSTRAINT  EMP_EMP_ID_PK  PRIMARY KEY ( NU_EMPLOYEE_ID );
+ 
+  ALTER TABLE  DT_EMPLOYEES  ADD CONSTRAINT  EMP_EMAIL_UK  UNIQUE ( VC_EMAIL );
+  ALTER TABLE  DT_EMPLOYEES  ADD CONSTRAINT  EMP_SALARY_MIN  CHECK (NU_SALARY > 0) ENABLE;
+  ALTER TABLE  DT_EMPLOYEES  MODIFY ( VC_JOB_ID  CONSTRAINT  EMP_JOB_NN  NOT NULL ENABLE);
+  ALTER TABLE  DT_EMPLOYEES  MODIFY ( DT_HIRE_DATE  CONSTRAINT  EMP_HIRE_DATE_NN  NOT NULL ENABLE);
+  ALTER TABLE  DT_EMPLOYEES  MODIFY ( VC_EMAIL  CONSTRAINT  EMP_EMAIL_NN  NOT NULL ENABLE);
+  ALTER TABLE  DT_EMPLOYEES  MODIFY ( VC_LAST_NAME  CONSTRAINT  EMP_LAST_NAME_NN  NOT NULL ENABLE);
+--------------------------------------------------------
+--  Ref Constraints for Table DT_EMPLOYEES
+--------------------------------------------------------
+
+  ALTER TABLE  DT_EMPLOYEES  ADD CONSTRAINT  EMP_DEPT_FK  FOREIGN KEY ( NU_DEPARTMENT_ID )
+	  REFERENCES  MST_DEPARTMENTS  ( NU_DEPARTMENT_ID ) ENABLE;
+  ALTER TABLE  DT_EMPLOYEES  ADD CONSTRAINT  EMP_JOB_FK  FOREIGN KEY ( VC_JOB_ID )
+	  REFERENCES  MST_JOBS  ( VC_JOB_ID ) ENABLE;
+  ALTER TABLE  DT_EMPLOYEES  ADD CONSTRAINT  EMP_MANAGER_FK  FOREIGN KEY ( NU_MANAGER_ID )
+	  REFERENCES  DT_EMPLOYEES  ( NU_EMPLOYEE_ID ) ENABLE;
+
+-------------------------------------------------------
+--  DDL for Index JHIST_DEPARTMENT_IX
+--------------------------------------------------------
+
+  CREATE INDEX  JHIST_DEPARTMENT_IX  ON  DT_JOB_HISTORY  ( NU_DEPARTMENT_ID );
+--------------------------------------------------------
+--  DDL for Index JHIST_EMPLOYEE_IX
+--------------------------------------------------------
+
+  CREATE INDEX  JHIST_EMPLOYEE_IX  ON  DT_JOB_HISTORY  ( NU_EMPLOYEE_ID );
+--------------------------------------------------------
+--  DDL for Index JHIST_JOB_IX
+--------------------------------------------------------
+
+  CREATE INDEX  JHIST_JOB_IX  ON  DT_JOB_HISTORY  ( VC_JOB_ID );
+--------------------------------------------------------
+--  DDL for Index JHIST_EMP_ID_ST_DATE_PK
+--------------------------------------------------------
+
+  CREATE UNIQUE INDEX  JHIST_EMP_ID_ST_DATE_PK  ON  DT_JOB_HISTORY  ( NU_EMPLOYEE_ID ,  DT_START_DATE );
+--------------------------------------------------------
+--  Constraints for Table DT_JOB_HISTORY
+--------------------------------------------------------
+
+  ALTER TABLE  DT_JOB_HISTORY  ADD CONSTRAINT  JHIST_EMP_ID_ST_DATE_PK  PRIMARY KEY ( NU_EMPLOYEE_ID ,  DT_START_DATE );
+  ALTER TABLE  DT_JOB_HISTORY  ADD CONSTRAINT  JHIST_DATE_INTERVAL  CHECK (DT_end_date > DT_start_date) ENABLE;
+  ALTER TABLE  DT_JOB_HISTORY  MODIFY ( VC_JOB_ID  CONSTRAINT  JHIST_JOB_NN  NOT NULL ENABLE);
+  ALTER TABLE  DT_JOB_HISTORY  MODIFY ( DT_END_DATE  CONSTRAINT  JHIST_END_DATE_NN  NOT NULL ENABLE);
+  ALTER TABLE  DT_JOB_HISTORY  MODIFY ( DT_START_DATE  CONSTRAINT  JHIST_START_DATE_NN  NOT NULL ENABLE);
+  ALTER TABLE  DT_JOB_HISTORY  MODIFY ( NU_EMPLOYEE_ID  CONSTRAINT  JHIST_EMPLOYEE_NN  NOT NULL ENABLE);
+--------------------------------------------------------
+--  Ref Constraints for Table DT_JOB_HISTORY
+--------------------------------------------------------
+
+  ALTER TABLE  DT_JOB_HISTORY  ADD CONSTRAINT  JHIST_DEPT_FK  FOREIGN KEY ( NU_DEPARTMENT_ID )
+	  REFERENCES  MST_DEPARTMENTS  ( NU_DEPARTMENT_ID ) ENABLE;
+
+  ALTER TABLE  DT_JOB_HISTORY  ADD CONSTRAINT  JHIST_EMP_FK  FOREIGN KEY ( NU_EMPLOYEE_ID )
+	  REFERENCES  DT_EMPLOYEES  ( NU_EMPLOYEE_ID ) DISABLE;
+
+  ALTER TABLE  DT_JOB_HISTORY  ADD CONSTRAINT  JHIST_JOB_FK  FOREIGN KEY ( VC_JOB_ID )
+	  REFERENCES  MST_JOBS  ( VC_JOB_ID ) ENABLE;
+--------------------------------------------------------
+--  DDL for Index JOB_ID_PK
+--------------------------------------------------------
+
+   --- CREATE UNIQUE INDEX  JOB_ID_PK  ON  MST_JOBS  ( VC_JOB_ID );    ------ already add in table 
+--------------------------------------------------------
+--  Constraints for Table MST_JOBS
+--------------------------------------------------------
+
+  -- ALTER TABLE  MST_JOBS  ADD CONSTRAINT  JOB_ID_PK  PRIMARY KEY ( VC_JOB_ID );   ----- already add pk in table
+  ALTER TABLE  MST_JOBS  MODIFY ( VC_JOB_TITLE  CONSTRAINT  JOB_TITLE_NN  NOT NULL ENABLE);
+--------------------------------------------------------
+--  DDL for Index LOC_ID_PK
+--------------------------------------------------------
+  CREATE UNIQUE INDEX  LOC_ID_PK  ON  DT_LOCATIONS  ( NU_LOCATION_ID );
+--------------------------------------------------------
+--  DDL for Index LOC_CITY_IX
+--------------------------------------------------------
+  CREATE INDEX  LOC_CITY_IX  ON  DT_LOCATIONS  ( VC_CITY );
+--------------------------------------------------------
+--  DDL for Index LOC_STATE_PROVINCE_IX
+--------------------------------------------------------
+  CREATE INDEX  LOC_STATE_PROVINCE_IX  ON  DT_LOCATIONS  ( VC_STATE_PROVINCE );
+--------------------------------------------------------
+--  DDL for Index LOC_COUNTRY_IX
+--------------------------------------------------------
+
+  CREATE INDEX  LOC_COUNTRY_IX  ON  DT_LOCATIONS  ( CH_COUNTRY_ID );
+--------------------------------------------------------
+--  Constraints for Table LOCATIONS
+-------------------------------------------------------
+  ALTER TABLE  DT_LOCATIONS  ADD CONSTRAINT  LOC_ID_PK  PRIMARY KEY ( NU_LOCATION_ID );
+  ALTER TABLE  DT_LOCATIONS  MODIFY ( VC_CITY  CONSTRAINT  LOC_CITY_NN  NOT NULL ENABLE);
+--------------------------------------------------------
+--  Ref Constraints for Table DT_LOCATIONS
+--------------------------------------------------------
+
+  ALTER TABLE  DT_LOCATIONS  ADD CONSTRAINT  LOC_C_ID_FK  FOREIGN KEY ( CH_COUNTRY_ID )
+	  REFERENCES  MST_COUNTRIES  ( CH_COUNTRY_ID ) ENABLE;
+--------------------------------------------------------
+--  DDL for Index REG_ID_PK
+--------------------------------------------------------
+
+  -- CREATE UNIQUE INDEX  REG_ID_PK  ON  MST_REGIONS  ( NU_REGION_ID );    -- ALREADY ADD DEFAULT INDEX TABLE CREATE TIME
+--------------------------------------------------------
+--  Constraints for Table MST_REGIONS
+--------------------------------------------------------
+ -- ALTER TABLE  MST_REGIONS  ADD CONSTRAINT  REG_ID_PK  PRIMARY KEY ( NU_REGION_ID );   --- ALREADY ADD PK IN TABLE CREATE TIME
+  ALTER TABLE  MST_REGIONS  MODIFY ( NU_REGION_ID  CONSTRAINT  NU_REGION_ID_NN  NOT NULL ENABLE);
+
